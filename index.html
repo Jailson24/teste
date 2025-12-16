@@ -237,7 +237,17 @@
             color: var(--text-color); 
         }
 
-        .hero-video iframe {
+        /* NOVO: Garante que o container do player ocupe todo o espaço */
+        #youtube-player-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ESTILO PARA O IFRAME (Gerado pela API) */
+        #youtube-player-container iframe {
             width: 100%;
             height: 100%;
             border: none;
@@ -246,16 +256,22 @@
             left: 0;
             pointer-events: none; /* IMPEDE O CLIQUE PARA YOUTUBE */
         }
-
+        
         .yt-thumb, .yt-play {
-             display: none !important; /* FORÇA A REMOÇÃO DA THUMB/PLAY BUTTON */
+             display: none !important; /* GARANTE QUE ESSES ELEMENTOS ANTIGOS NÃO APAREÇAM */
         }
         
-        /* ESTILO DO BOTÃO DE SOM (NOVO/AJUSTADO) */
-        #videoSoundToggle {
+        /* ESTILO DO BOTÃO DE SOM/PAUSE (Controles Adicionais) */
+        .video-controls {
             position: absolute;
             bottom: 10px;
             right: 10px;
+            z-index: 30;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .video-control-btn {
             width: 45px;
             height: 45px;
             background: rgba(0, 0, 0, 0.5);
@@ -264,16 +280,15 @@
             border-radius: 50%;
             font-size: 1.2rem;
             cursor: pointer;
-            z-index: 30;
-            display: none; /* Inicia oculto, será exibido ao carregar o vídeo via JS */
+            display: flex;
             align-items: center;
             justify-content: center;
             transition: background-color 0.3s;
-            text-indent: 0; /* Garante que o ícone do botão seja visível */
-            line-height: 1; /* Garante alinhamento do ícone */
+            text-indent: 0; 
+            line-height: 1; 
         }
 
-        #videoSoundToggle:hover {
+        .video-control-btn:hover {
             background: var(--accent-1);
         }
 
@@ -732,7 +747,7 @@
     pointer-events: none;
 }
 </style>
-
+    <script src="https://www.youtube.com/iframe_api"></script>
 </head>
 
 <body id="top">
@@ -757,8 +772,15 @@
 
 
 <section class="hero wrap reveal">
-    <div class="hero-video" id="ytLazy">
+    <div class="hero-video">
+        <div id="youtube-player-container"></div>
+        
+        <div class="video-controls">
+            <button id="videoPlayPause" class="video-control-btn" aria-label="Pausar vídeo" onclick="togglePlayPause()">❚❚</button>
+            <button id="videoSoundToggle" class="video-control-btn" aria-label="Alternar som do vídeo" onclick="toggleVideoSound()">🔇</button>
         </div>
+
+    </div>
 
     <div class="hero-text">
         <h2>Proteção que acompanha você</h2>

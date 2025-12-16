@@ -1,6 +1,15 @@
 /* ============================================================
-   SCRIPT.JS — GitHub Pages SAFE (VÍDEO COM SOM)
+   SCRIPT.JS — GitHub Pages SAFE (VÍDEO COM SOM E PAUSE/PLAY)
 ============================================================ */
+
+let player; // Variável global para o objeto do player do YouTube
+const VIDEO_ID = 'BWoW-6frVU4';
+
+// A função onYouTubeIframeAPIReady é chamada automaticamente pela API do YouTube
+// assim que ela estiver carregada. Ela é o ponto de entrada para a inicialização do player.
+window.onYouTubeIframeAPIReady = function() {
+    initPlayer();
+};
 
 function initTheme() {
     const toggle = document.getElementById("themeToggle");
@@ -68,55 +77,117 @@ function initImageModal() {
     document.addEventListener("keydown", e => e.key === "Escape" && closeModal());
 }
 
-// O vídeo deve iniciar mudo.
-let videoMuted = true;
+// ===========================================
+// CONTROLE DO PLAYER DE VÍDEO (VIA API)
+// ===========================================
 
-/**
- * Carrega o iframe do YouTube.
- * @param {boolean} unmute - Se deve ser carregado com som (false = mudo, true = som ligado).
- */
-function loadVideo(unmute = false) {
-    const yt = document.getElementById("ytLazy");
-    if (!yt) return;
+function updateSoundIcon(isMuted) {
+    const btn = document.getElementById("videoSoundToggle");
+    if (btn) {
+        // Ícone reflete o estado ATUAL do vídeo
+        btn.textContent = isMuted ? '🔇' : '🔊';
+        btn.setAttribute('aria-label', isMuted ? 'Ligar som' : 'Desligar som');
+    }
+}
 
-    // 1. Atualiza o estado global com base no que foi solicitado
-    videoMuted = !unmute;
+function updatePlayPauseIcon(isPlaying) {
+    const btn = document.getElementById("videoPlayPause");
+    if (btn) {
+        // Ícone reflete o estado ATUAL do vídeo
+        btn.textContent = isPlaying ? '❚❚' : '▶';
+        btn.setAttribute('aria-label', isPlaying ? 'Pausar vídeo' : 'Reproduzir vídeo');
+    }
+}
+
+function onPlayerReady(event) {
+    // 1. Garante que o vídeo inicie mudo (autoplay)
+    event.target.mute();
+    event.target.playVideo();
+
+    // 2. Atualiza o ícone de som para o estado inicial (Mudo)
+    updateSoundIcon(true);
+    // 3. Atualiza o ícone de Play/Pause para o estado inicial (Play/Reproduzindo)
+    updatePlayPauseIcon(true);
+}
+
+function onPlayerStateChange(event) {
+    // YT.PlayerState.ENDED = 0
+    if (event.data === YT.PlayerState.ENDED) {
+        // Reinicia o loop
+        player.seekTo(0);
+        player.playVideo();
+    }
     
-    // 2. Define os parâmetros do iframe e o ícone do botão
-    const muteParam = videoMuted ? 1 : 0;
+    // 4. Atualiza o ícone de Play/Pause quando o estado mudar
+    const isPlaying = event.data === YT.PlayerState.PLAYING;
+    // Se o player estiver em um estado relevante (Playing=1 ou Paused=2), atualiza o ícone
+    if (event.data === YT.PlayerState.PLAYING || event.data === YT.PlayerState.PAUSED) {
+        updatePlayPauseIcon(isPlaying);
+    }
+}
+
+function initPlayer() {
+    const playerContainer = document.getElementById('youtube-player-container');
+    if (!playerContainer) return;
     
-    // O ícone reflete o estado ATUAL do vídeo:
-    // Se o vídeo está MUDO (true), o ícone mostra MUDO (🔇).
-    // Se o vídeo está LIGADO (false), o ícone mostra SOM ALTO (🔊).
-    const soundIcon = videoMuted ? '🔇' : '🔊';
+    // Verifica se a API está carregada (necessário se o DOMContentLoaded for mais rápido que a API)
+    if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+        setTimeout(initPlayer, 100);
+        return;
+    }
 
-    // 3. Limpa o container
-    yt.innerHTML = ''; 
-
-    // 4. Cria o iframe e o botão de som
-    const iframeHTML = `
-        <iframe
-            src="https://www.youtube.com/embed/BWoW-6frVU4?autoplay=1&mute=${muteParam}&controls=0&modestbranding=1&rel=0&loop=1&playlist=BWoW-6frVU4&enablejsapi=1"
-            allow="autoplay; encrypted-media; picture-in-picture"
-            allowfullscreen
-            loading="lazy">
-        </iframe>
-        <button id="videoSoundToggle" onclick="toggleVideoSound()" aria-label="Alternar som do vídeo">${soundIcon}</button>
-    `;
-
-    // 5. Insere o novo conteúdo
-    yt.insertAdjacentHTML('beforeend', iframeHTML);
-    
-    // 6. Exibe o botão de som
-    const soundButton = document.getElementById("videoSoundToggle");
-    if (soundButton) soundButton.style.display = 'flex';
+    player = new YT.Player('youtube-player-container', {
+        height: '100%',
+        width: '100%',
+        videoId: VIDEO_ID,
+        playerVars: {
+            'autoplay': 1,
+            'controls': 0, // Sem controles nativos do YouTube
+            'modestbranding': 1,
+            'rel': 0,
+            'loop': 1,
+            'playlist': VIDEO_ID, // Necessário para o loop funcionar com controls=0
+            'enablejsapi': 1,
+            'iv_load_policy': 3, // Oculta anotações (texto flutuante)
+        },
+        events: {
+            'onReady': onPlayerReady,
+            'onStateChange': onPlayerStateChange
+        }
+    });
 }
 
 function toggleVideoSound() {
-    // O clique deve INVERTER o estado atual (videoMuted).
-    // Se estava mudo, queremos unmute = true. Se estava com som, queremos unmute = false.
-    loadVideo(videoMuted); 
+    if (!player || typeof player.isMuted !== 'function') return;
+
+    if (player.isMuted()) {
+        player.unMute();
+        updateSoundIcon(false); // Agora está com som
+    } else {
+        player.mute();
+        updateSoundIcon(true); // Agora está mudo
+    }
 }
+
+function togglePlayPause() {
+    if (!player || typeof player.getPlayerState !== 'function') return;
+
+    const playerState = player.getPlayerState();
+    
+    // Se estiver pausado (2), parado (0), ou não reproduzindo
+    if (playerState !== YT.PlayerState.PLAYING) {
+        player.playVideo();
+        // O ícone será atualizado via onPlayerStateChange
+    } else {
+        // Se estiver reproduzindo (1)
+        player.pauseVideo();
+        // O ícone será atualizado via onPlayerStateChange
+    }
+}
+
+// Torna as funções de controle acessíveis globalmente
+window.toggleVideoSound = toggleVideoSound;
+window.togglePlayPause = togglePlayPause;
 
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -124,10 +195,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initScrollReveal();
     initCarousel();
     initImageModal();
-    
-    // 1. CHAMA loadVideo NO INÍCIO para garantir Autoplay Mudo (videoMuted = true)
-    // Passamos 'false' para unmute, forçando o estado inicial de Mudo (mute=1) no iframe.
-    loadVideo(false); 
+    // initPlayer() será chamada automaticamente pela API do YouTube (onYouTubeIframeAPIReady)
 
     // Funções modais e de formulário
     const openRegisterModal = document.getElementById('openRegisterModal');
@@ -148,6 +216,3 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     }
 });
-
-// A função toggleVideoSound deve ser globalmente acessível
-window.toggleVideoSound = toggleVideoSound;
