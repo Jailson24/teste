@@ -70,69 +70,58 @@ function initImageModal() {
 
 let videoMuted = true;
 
-function loadVideo() {
+/**
+ * Carrega o iframe do YouTube substituindo o conteúdo do container.
+ * @param {boolean} unmute - Se deve ser carregado com som.
+ */
+function loadVideo(unmute = false) {
     const yt = document.getElementById("ytLazy");
     if (!yt) return;
 
-    // Remove a thumbnail e o botão de play
-    const thumbnail = yt.querySelector(".yt-thumb");
-    const playButton = yt.querySelector(".yt-play");
-    if (thumbnail) thumbnail.style.opacity = '0';
-    if (playButton) playButton.style.display = 'none';
+    // 1. Define o estado de mudo e o ícone
+    videoMuted = !unmute;
+    const muteParam = videoMuted ? 1 : 0;
+    const soundIcon = videoMuted ? '🔇' : '🔊';
 
-    // Cria e insere o iframe
-    yt.innerHTML = `
+    // 2. Remove o conteúdo anterior (incluindo thumbnail e play button)
+    yt.innerHTML = ''; 
+
+    // 3. Cria o iframe e o botão de som
+    const iframeHTML = `
         <iframe
-            src="https://www.youtube.com/embed/BWoW-6frVU4?autoplay=1&mute=${videoMuted ? 1 : 0}&controls=0&modestbranding=1&rel=0&loop=1&playlist=BWoW-6frVU4&enablejsapi=1"
+            src="https://www.youtube.com/embed/BWoW-6frVU4?autoplay=1&mute=${muteParam}&controls=0&modestbranding=1&rel=0&loop=1&playlist=BWoW-6frVU4&enablejsapi=1"
             allow="autoplay; encrypted-media; picture-in-picture"
             allowfullscreen
             loading="lazy">
         </iframe>
-        <button id="videoSoundToggle" onclick="toggleVideoSound()" aria-label="Ativar som do vídeo">${videoMuted ? '🔇' : '🔊'}</button>
+        <button id="videoSoundToggle" onclick="toggleVideoSound()" aria-label="Alternar som do vídeo">${soundIcon}</button>
     `;
+
+    // 4. Insere o novo conteúdo (iframe e botão de som)
+    yt.insertAdjacentHTML('beforeend', iframeHTML);
     
-    // Exibe o botão de som
+    // 5. Exibe o botão de som (definido no CSS como display: none inicial)
     const soundButton = document.getElementById("videoSoundToggle");
     if (soundButton) soundButton.style.display = 'flex';
 }
 
 function toggleVideoSound() {
-    videoMuted = !videoMuted;
-    
-    const btn = document.getElementById("videoSoundToggle");
-    if (btn) btn.textContent = videoMuted ? "🔇" : "🔊";
-    
-    // Recarrega o vídeo com o novo estado de mudo
-    loadVideo();
+    // Recarrega o vídeo com o estado de som oposto
+    loadVideo(!videoMuted);
 }
 
 function initVideoControl() {
-    const yt = document.getElementById("ytLazy");
-    const playButton = yt.querySelector(".yt-play");
-    const thumbnail = yt.querySelector(".yt-thumb");
-
-    // Lógica para carregar o vídeo ao clicar no botão de play
-    playButton.onclick = () => {
-        loadVideo();
-    };
-    
-    // Inicia com o vídeo mudo e a thumbnail/botão de play visíveis
-    // A função loadVideo é chamada no DOMContentLoaded para iniciar o vídeo em autoplay/loop (mudo), 
-    // mas sem a thumbnail. Aqui reintroduzimos o clique no play.
-    
-    // Chamada inicial para garantir que o vídeo esteja no modo correto (com thumbnail) se não houver autoplay
-    // Como o vídeo está em autoplay, removemos a lógica de clique no playButton do JS e deixamos o CSS ocultar
-    // a imagem/botão.
-
-    // A lógica de clique no play foi integrada ao loadVideo, mas a chamada loadVideo() no DOMContentLoaded
-    // já inicia o vídeo. Para respeitar o clique, precisamos mudar a função de loadVideo para ser chamada
-    // APENAS ao clicar no botão de play.
-    
-    // *Nova Lógica* - O vídeo só carrega/inicia quando o usuário clica no botão de Play.
     const container = document.getElementById("ytLazy");
-    if (container) {
-        container.querySelector(".yt-play").onclick = () => {
-            loadVideo();
+    if (!container) return;
+
+    // Seleciona os elementos iniciais (antes do iframe ser carregado)
+    const playButton = container.querySelector(".yt-play");
+    const thumbnail = container.querySelector(".yt-thumb");
+
+    // Lógica para carregar o vídeo APENAS ao clicar no botão de Play/Thumbnail
+    if (playButton) {
+        playButton.onclick = () => {
+            loadVideo(false); // Inicia o vídeo MUDO por padrão
         };
     }
 }
@@ -143,10 +132,6 @@ document.addEventListener("DOMContentLoaded", () => {
     initScrollReveal();
     initCarousel();
     initImageModal();
-    // O vídeo não será mais carregado automaticamente, esperando pelo clique no botão de play/thumbnail
-    // Removendo loadVideo(); daqui
-    
-    // Inicialização do controle de vídeo
     initVideoControl();
 
     // Funções modais e de formulário
