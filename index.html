@@ -1,5 +1,3 @@
-
-<!-- index.html atualizado -->
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="dark">
 <head>
@@ -219,7 +217,7 @@
             flex: 1.2; /* Dar mais peso ao vídeo */
             aspect-ratio: 16 / 9;
             position: relative;
-            cursor: pointer;
+            /* cursor: pointer; REMOVIDO PARA IMPEDIR O CLIQUE */
             background-color: #000;
             border-radius: var(--radius);
             overflow: hidden;
@@ -233,6 +231,7 @@
             position: absolute;
             top: 0;
             left: 0;
+            pointer-events: none; /* IMPEDE O CLIQUE PARA YOUTUBE */
         }
 
         .yt-thumb {
@@ -259,6 +258,8 @@
             justify-content: center;
             transition: transform 0.3s, opacity 0.3s;
             box-shadow: 0 0 0 10px rgba(42, 134, 255, 0.3);
+            cursor: pointer; /* Mantido para o clique no PLAY */
+            z-index: 20;
         }
 
         .yt-play::before {
@@ -270,6 +271,31 @@
         
         .hero-video:hover .yt-play {
             transform: translate(-50%, -50%) scale(1.05);
+        }
+
+        /* ESTILO DO BOTÃO DE SOM (NOVO/AJUSTADO) */
+        #videoSoundToggle {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 45px;
+            height: 45px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+            display: none; /* Inicia oculto, será exibido ao carregar o vídeo */
+        }
+
+        #videoSoundToggle:hover {
+            background: var(--accent-1);
         }
 
         .hero-text {
@@ -753,6 +779,9 @@
 
 <section class="hero wrap reveal">
     <div class="hero-video" id="ytLazy">
+        <button id="videoSoundToggle" onclick="toggleVideoSound()" aria-label="Ativar som do vídeo">
+            🔇
+        </button>
         <img src="img/thumbnail.jpg" class="yt-thumb" alt="Thumbnail do vídeo de apresentação">
         <div class="yt-play"></div>
     </div>
@@ -914,7 +943,6 @@
 <script src="script.js" defer></script>
 
 
-<!-- MODAL IMAGEM FULLSCREEN -->
 <div id="imageModal" class="image-modal">
     <span class="image-modal-close">&times;</span>
     <img class="image-modal-content" id="imageModalImg">
