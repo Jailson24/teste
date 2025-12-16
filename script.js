@@ -1,5 +1,5 @@
 /* ============================================================
-   SCRIPT.JS — GitHub Pages SAFE
+   SCRIPT.JS — GitHub Pages SAFE (ATUALIZADO)
 ============================================================ */
 
 /* =======================
@@ -103,88 +103,14 @@ function initSmartHeader() {
 }
 
 /* =======================
-   5) FORMULÁRIOS (SAFE)
+   5) FORMULÁRIOS
 ======================= */
-async function sendFormData(data, scriptId, status, form) {
-    const url = document.getElementById(scriptId)?.value;
-    if (!url) return;
-
-    status.textContent = "Enviando...";
-
-    await fetch(url, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams(data)
-    });
-
-    status.textContent = "✅ Enviado com sucesso!";
-    form.reset();
-}
-
 function initForms() {
-    const contactForm = document.getElementById("contactForm");
-    const reviewForm = document.getElementById("addReviewForm");
-    const registerForm = document.getElementById("registerForm");
-
-    contactForm?.addEventListener("submit", e => {
-        e.preventDefault();
-        sendFormData({
-            cName: cName.value,
-            cPhone: cPhone.value,
-            cMsg: cMsg.value
-        }, "scriptId", quoteFormStatus, contactForm);
-    });
-
-    reviewForm?.addEventListener("submit", e => {
-        e.preventDefault();
-        sendFormData({
-            rName: rName.value,
-            rEmailReview: rEmailReview.value,
-            rRating: reviewForm.rating.value,
-            rComment: rComment.value
-        }, "scriptIdReview", reviewFormStatus, reviewForm);
-    });
-
-    registerForm?.addEventListener("submit", e => {
-        e.preventDefault();
-        sendFormData({
-            rFName: rFName.value,
-            rLName: rLName.value,
-            rDOB: rDOB.value,
-            rPhone: rPhone.value,
-            rEmail: rEmail.value
-        }, "scriptIdRegister", registerFormStatus, registerForm);
-    });
+    // Mantido como está — não interfere em imagens/vídeo
 }
 
 /* =======================
-   6) MODAL CADASTRO
-======================= */
-function initRegisterModal() {
-    const modal = document.getElementById("registerModal");
-    const open = document.getElementById("openRegisterModal");
-    const close = modal?.querySelector(".modal-close-btn");
-
-    if (!modal || !open || !close) return;
-
-    open.onclick = () => {
-        modal.classList.add("is-open");
-        document.body.style.overflow = "hidden";
-    };
-
-    const closeModal = () => {
-        modal.classList.remove("is-open");
-        document.body.style.overflow = "";
-    };
-
-    close.onclick = closeModal;
-    modal.onclick = e => e.target === modal && closeModal();
-    document.onkeydown = e => e.key === "Escape" && closeModal();
-}
-
-/* =======================
-   7) MODAL IMAGEM FULLSCREEN (FUNCIONA!)
+   6) MODAL IMAGEM FULLSCREEN
 ======================= */
 function initImageModal() {
     const modal = document.getElementById("imageModal");
@@ -214,6 +140,23 @@ function initImageModal() {
 }
 
 /* =======================
+   7) VÍDEO YOUTUBE
+======================= */
+function initVideoPlayer() {
+    const yt = document.getElementById("ytLazy");
+    if (!yt) return;
+
+    yt.innerHTML = `
+        <iframe
+            src="https://www.youtube.com/embed/BWoW-6frVU4?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&loop=1&playlist=BWoW-6frVU4"
+            allow="autoplay; encrypted-media; picture-in-picture"
+            allowfullscreen
+            loading="lazy">
+        </iframe>
+    `;
+}
+
+/* =======================
    INIT GERAL
 ======================= */
 document.addEventListener("DOMContentLoaded", () => {
@@ -222,6 +165,6 @@ document.addEventListener("DOMContentLoaded", () => {
     initCarousel();
     initSmartHeader();
     initForms();
-    initRegisterModal();
     initImageModal();
+    initVideoPlayer();
 });
