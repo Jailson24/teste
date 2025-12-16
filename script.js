@@ -68,25 +68,32 @@ function initImageModal() {
     document.addEventListener("keydown", e => e.key === "Escape" && closeModal());
 }
 
+// O vídeo deve iniciar mudo.
 let videoMuted = true;
 
 /**
- * Carrega o iframe do YouTube substituindo o conteúdo do container.
- * @param {boolean} unmute - Se deve ser carregado com som.
+ * Carrega o iframe do YouTube.
+ * @param {boolean} unmute - Se deve ser carregado com som (false = mudo, true = som ligado).
  */
 function loadVideo(unmute = false) {
     const yt = document.getElementById("ytLazy");
     if (!yt) return;
 
-    // 1. Define o estado de mudo e o ícone
+    // 1. Atualiza o estado global com base no que foi solicitado
     videoMuted = !unmute;
+    
+    // 2. Define os parâmetros do iframe e o ícone do botão
     const muteParam = videoMuted ? 1 : 0;
+    
+    // O ícone reflete o estado ATUAL do vídeo:
+    // Se o vídeo está MUDO (true), o ícone mostra MUDO (🔇).
+    // Se o vídeo está LIGADO (false), o ícone mostra SOM ALTO (🔊).
     const soundIcon = videoMuted ? '🔇' : '🔊';
 
-    // 2. Remove o conteúdo anterior (incluindo thumbnail e play button)
+    // 3. Limpa o container
     yt.innerHTML = ''; 
 
-    // 3. Cria o iframe e o botão de som
+    // 4. Cria o iframe e o botão de som
     const iframeHTML = `
         <iframe
             src="https://www.youtube.com/embed/BWoW-6frVU4?autoplay=1&mute=${muteParam}&controls=0&modestbranding=1&rel=0&loop=1&playlist=BWoW-6frVU4&enablejsapi=1"
@@ -97,33 +104,18 @@ function loadVideo(unmute = false) {
         <button id="videoSoundToggle" onclick="toggleVideoSound()" aria-label="Alternar som do vídeo">${soundIcon}</button>
     `;
 
-    // 4. Insere o novo conteúdo (iframe e botão de som)
+    // 5. Insere o novo conteúdo
     yt.insertAdjacentHTML('beforeend', iframeHTML);
     
-    // 5. Exibe o botão de som (definido no CSS como display: none inicial)
+    // 6. Exibe o botão de som
     const soundButton = document.getElementById("videoSoundToggle");
     if (soundButton) soundButton.style.display = 'flex';
 }
 
 function toggleVideoSound() {
-    // Recarrega o vídeo com o estado de som oposto
-    loadVideo(!videoMuted);
-}
-
-function initVideoControl() {
-    const container = document.getElementById("ytLazy");
-    if (!container) return;
-
-    // Seleciona os elementos iniciais (antes do iframe ser carregado)
-    const playButton = container.querySelector(".yt-play");
-    const thumbnail = container.querySelector(".yt-thumb");
-
-    // Lógica para carregar o vídeo APENAS ao clicar no botão de Play/Thumbnail
-    if (playButton) {
-        playButton.onclick = () => {
-            loadVideo(false); // Inicia o vídeo MUDO por padrão
-        };
-    }
+    // O clique deve INVERTER o estado atual (videoMuted).
+    // Se estava mudo, queremos unmute = true. Se estava com som, queremos unmute = false.
+    loadVideo(videoMuted); 
 }
 
 
@@ -132,7 +124,10 @@ document.addEventListener("DOMContentLoaded", () => {
     initScrollReveal();
     initCarousel();
     initImageModal();
-    initVideoControl();
+    
+    // 1. CHAMA loadVideo NO INÍCIO para garantir Autoplay Mudo (videoMuted = true)
+    // Passamos 'false' para unmute, forçando o estado inicial de Mudo (mute=1) no iframe.
+    loadVideo(false); 
 
     // Funções modais e de formulário
     const openRegisterModal = document.getElementById('openRegisterModal');

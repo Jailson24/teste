@@ -217,11 +217,24 @@
             flex: 1.2; /* Dar mais peso ao vídeo */
             aspect-ratio: 16 / 9;
             position: relative;
-            /* cursor: pointer; REMOVIDO PARA IMPEDIR O CLIQUE */
             background-color: #000;
             border-radius: var(--radius);
             overflow: hidden;
             box-shadow: var(--shadow);
+            
+            /* CSS de limpeza */
+            text-indent: -9999px; 
+            font-size: 0;
+            line-height: 0;
+            color: transparent;
+        }
+        
+        /* RESTAURA PROPRIEDADES DE TEXTO PARA FILHOS IMPORTANTES */
+        .hero-video > * {
+            text-indent: 0;
+            font-size: initial;
+            line-height: initial;
+            color: var(--text-color); 
         }
 
         .hero-video iframe {
@@ -234,45 +247,10 @@
             pointer-events: none; /* IMPEDE O CLIQUE PARA YOUTUBE */
         }
 
-        .yt-thumb {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            position: absolute;
-            top: 0;
-            left: 0;
-            transition: opacity 0.3s;
+        .yt-thumb, .yt-play {
+             display: none !important; /* FORÇA A REMOÇÃO DA THUMB/PLAY BUTTON */
         }
         
-        .yt-play {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90px;
-            height: 90px;
-            background: var(--accent-1);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.3s, opacity 0.3s;
-            box-shadow: 0 0 0 10px rgba(42, 134, 255, 0.3);
-            cursor: pointer; /* Mantido para o clique no PLAY */
-            z-index: 20;
-        }
-
-        .yt-play::before {
-            content: '▶';
-            color: white;
-            font-size: 2.2rem;
-            margin-left: 5px;
-        }
-        
-        .hero-video:hover .yt-play {
-            transform: translate(-50%, -50%) scale(1.05);
-        }
-
         /* ESTILO DO BOTÃO DE SOM (NOVO/AJUSTADO) */
         #videoSoundToggle {
             position: absolute;
@@ -291,6 +269,8 @@
             align-items: center;
             justify-content: center;
             transition: background-color 0.3s;
+            text-indent: 0; /* Garante que o ícone do botão seja visível */
+            line-height: 1; /* Garante alinhamento do ícone */
         }
 
         #videoSoundToggle:hover {
@@ -778,12 +758,7 @@
 
 <section class="hero wrap reveal">
     <div class="hero-video" id="ytLazy">
-        <button id="videoSoundToggle" onclick="toggleVideoSound()" aria-label="Ativar som do vídeo">
-            🔇
-        </button>
-        <img src="img/thumbnail.jpg" class="yt-thumb" alt="Thumbnail do vídeo de apresentação">
-        <div class="yt-play"></div>
-    </div>
+        </div>
 
     <div class="hero-text">
         <h2>Proteção que acompanha você</h2>
